@@ -1,0 +1,1 @@
+ALTER TABLE "characters" ADD COLUMN "ring_color" text DEFAULT '#c9a962' NOT NULL;
