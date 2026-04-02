@@ -120,6 +120,18 @@ export function OcNetworkPage() {
     setModal("add");
   };
 
+  const dismissAddModal = () => {
+    setModal("none");
+    closeAddCrop();
+    setAddFile(null);
+  };
+
+  const dismissEditModal = () => {
+    setModal("none");
+    closeEditCrop();
+    setEditFile(null);
+  };
+
   const openEditModal = (id: string) => {
     const n = nodeById.get(id);
     setEditPickId(id);
@@ -190,7 +202,7 @@ export function OcNetworkPage() {
     setEditErr(null);
     const id = editPickId.trim();
     if (!id) {
-      setEditErr("请选择要编辑的角色");
+      setEditErr("先选一个要编辑的角色");
       return;
     }
     setEditBusy(true);
@@ -223,7 +235,7 @@ export function OcNetworkPage() {
           }),
         });
         const je = (await resE.json()) as { error?: string };
-        if (!resE.ok) throw new Error(je.error ?? "关系保存失败");
+        if (!resE.ok) throw new Error(je.error ?? "关系保存失败，请重试");
       }
       setModal("none");
       await refresh();
@@ -239,7 +251,7 @@ export function OcNetworkPage() {
   const deleteSelectedCharacter = async () => {
     if (!selectedNode) return;
     const ok = window.confirm(
-      `确定从推演稿中删去「${selectedNode.name}」吗？与其相连的批注也会一并抹去，且无法恢复。`,
+      `确定删除「${selectedNode.name}」吗？相关的连线也会一起删掉，且无法恢复。`,
     );
     if (!ok) return;
     setDeleteBusy(true);
@@ -278,15 +290,15 @@ export function OcNetworkPage() {
             铃华2026 · 校外研修
           </h1>
           <p className="mt-0.5 text-[11px] text-[var(--gold)]/90">
-            关系推演稿
+            成员关系一览
           </p>
           <p className="mt-2 hidden max-w-2xl text-xs leading-relaxed text-[var(--parchment)]/75 sm:block">
-            某位演员为研读本次活动背后的「剧本」，将登场者记入名册，并把彼此之间的看法与经历誊成连线——权当排演前的案头工作。点头像可读小传；箭矢示「谁如何看待谁」。
+            我在把这次校外研修当成一出戏来读：谁登场、谁和谁有过交集、彼此怎么想——都画在这张图里。点头像看简介；箭头表示「这个人对那个人怎么看」。
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           <label className="flex items-center gap-1.5 text-[10px] text-[var(--ink-muted)]">
-            站点密钥
+            站点密码
             <input
               type="password"
               autoComplete="off"
@@ -298,27 +310,27 @@ export function OcNetworkPage() {
             />
           </label>
           <button type="button" onClick={openAddModal} className={btnPrimary}>
-            登册角色
+            添加角色
           </button>
           <button
             type="button"
             onClick={() => {
               if (nodes.length === 0) {
-                window.alert("名册尚空，请先登册一名角色。");
+                window.alert("还没有角色，先添加一个吧。");
                 return;
               }
               openEditModal(nodes[0]!.id);
             }}
             className={btnGhost}
           >
-            修订档案
+            编辑资料
           </button>
           <button
             type="button"
             onClick={() => void refresh()}
             className={btnGhost}
           >
-            重誊一版
+            刷新
           </button>
         </div>
       </header>
@@ -327,14 +339,16 @@ export function OcNetworkPage() {
         <section className="relative min-h-[48vh] min-w-0 flex-1 p-2 lg:border-r lg:border-[var(--border-subtle)] lg:p-3">
           {loading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center rounded-sm bg-[var(--void)]/70 text-sm text-[var(--gold-dim)]">
-              展卷中…
+              加载中…
             </div>
           )}
           {loadErr && (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-sm bg-[var(--void)]/85 p-4 text-center text-sm">
               <p className="text-[var(--parchment)]">{loadErr}</p>
               <p className="text-xs text-[var(--ink-muted)]">
-                请配置 DATABASE_URL 并执行 db:push（若刚增加头像框颜色字段，亦需 push）
+                请检查 DATABASE_URL 是否配置好，并在本地或服务器执行过{" "}
+                <code className="rounded bg-black/30 px-1">npm run db:push</code>{" "}
+                同步数据库。
               </p>
               <button type="button" className={btnPrimary} onClick={() => void refresh()}>
                 再试
@@ -361,7 +375,7 @@ export function OcNetworkPage() {
           {selectedLink ? (
             <div className="space-y-3 text-sm">
               <h2 className="font-display border-b border-[var(--border-subtle)] pb-2 text-base font-semibold text-[var(--ink)]">
-                批注：关系
+                这条关系
               </h2>
               <p className="text-xs text-[var(--ink-muted)]">
                 {nodeById.get(selectedLink.source)?.name ?? selectedLink.source}{" "}
@@ -369,19 +383,19 @@ export function OcNetworkPage() {
                 {nodeById.get(selectedLink.target)?.name ?? selectedLink.target}
               </p>
               <div>
-                <div className={labelClass}>看法 / 判词</div>
+                <div className={labelClass}>看法</div>
                 <p className="mt-1 whitespace-pre-wrap text-[var(--ink)]">
-                  {selectedLink.viewpoint || "（留白）"}
+                  {selectedLink.viewpoint || "（还没写）"}
                 </p>
               </div>
               <div>
-                <div className={labelClass}>台上台下经历</div>
+                <div className={labelClass}>一起经历过什么</div>
                 <p className="mt-1 whitespace-pre-wrap text-[var(--ink)]">
-                  {selectedLink.interactionHistory || "（留白）"}
+                  {selectedLink.interactionHistory || "（还没写）"}
                 </p>
               </div>
               <p className="text-xs text-[var(--ink-muted)]">
-                在「修订档案」中选定起始角色，可改写这条批注。
+                想改这条线的话，点上面「编辑资料」，选左边的角色当起点即可。
               </p>
             </div>
           ) : selectedNode ? (
@@ -401,7 +415,7 @@ export function OcNetworkPage() {
                     {selectedNode.name}
                   </h2>
                   <p className="text-xs text-[var(--ink-muted)]">
-                    录入于{" "}
+                    添加于{" "}
                     {new Date(selectedNode.createdAt).toLocaleString("zh-CN")}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -410,7 +424,7 @@ export function OcNetworkPage() {
                       className={btnPrimary}
                       onClick={() => openEditModal(selectedNode.id)}
                     >
-                      修订此条
+                      编辑
                     </button>
                     <button
                       type="button"
@@ -418,24 +432,26 @@ export function OcNetworkPage() {
                       className={cn(btnDanger, deleteBusy && "opacity-50")}
                       onClick={() => void deleteSelectedCharacter()}
                     >
-                      {deleteBusy ? "删去中…" : "从册上删去"}
+                      {deleteBusy ? "删除中…" : "删除"}
                     </button>
                   </div>
                 </div>
               </div>
               <div>
-                <div className={labelClass}>人物小传 / 案卷摘要</div>
+                <div className={labelClass}>背景故事</div>
                 <p className="mt-1 whitespace-pre-wrap leading-relaxed text-[var(--ink)]">
-                  {selectedNode.backstory || "（尚未撰写）"}
+                  {selectedNode.backstory || "（还没写）"}
                 </p>
               </div>
               <div>
                 <div className="text-xs font-medium text-[#6b5a3a]">
-                  此人如何看待他人
+                  Ta 怎么看待别人
                 </div>
                 <ul className="mt-2 space-y-2">
                   {outgoing.length === 0 && (
-                    <li className="text-sm text-[var(--ink-muted)]">暂无 outgoing 批注</li>
+                    <li className="text-sm text-[var(--ink-muted)]">
+                      还没有 outgoing 的线
+                    </li>
                   )}
                   {outgoing.map((l) => (
                     <li
@@ -458,11 +474,13 @@ export function OcNetworkPage() {
               </div>
               <div>
                 <div className="text-xs font-medium text-[#4a5a6e]">
-                  他人如何看待此人
+                  别人怎么看待 Ta
                 </div>
                 <ul className="mt-2 space-y-2">
                   {incoming.length === 0 && (
-                    <li className="text-sm text-[var(--ink-muted)]">暂无 incoming 批注</li>
+                    <li className="text-sm text-[var(--ink-muted)]">
+                      还没有 incoming 的线
+                    </li>
                   )}
                   {incoming.map((l) => (
                     <li
@@ -487,10 +505,10 @@ export function OcNetworkPage() {
           ) : (
             <div className="space-y-3 text-sm text-[var(--ink-muted)]">
               <p className="font-display text-base font-semibold text-[var(--ink)]">
-                案头说明
+                怎么用
               </p>
-              <p>于左侧卷轴上点头像，可读该角色小传与往来批注。</p>
-              <p>点金线，可读两人之间的看法与经历摘要。</p>
+              <p>在左边图里点头像，能看 Ta 的背景故事和跟别人的关系。</p>
+              <p>点那条金色的线，能看到这两个人之间写了什么看法、一起经历过啥。</p>
             </div>
           )}
         </aside>
@@ -499,7 +517,7 @@ export function OcNetworkPage() {
       {addCropSrc && (
         <AvatarCropDialog
           imageSrc={addCropSrc}
-          title="裁剪肖像（登册）"
+          title="裁剪头像"
           onCancel={closeAddCrop}
           onDone={(file) => {
             closeAddCrop();
@@ -511,7 +529,7 @@ export function OcNetworkPage() {
       {editCropSrc && (
         <AvatarCropDialog
           imageSrc={editCropSrc}
-          title="裁剪新肖像"
+          title="裁剪新头像"
           onCancel={closeEditCrop}
           onDone={(file) => {
             closeEditCrop();
@@ -521,19 +539,36 @@ export function OcNetworkPage() {
       )}
 
       {modal === "add" && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          role="presentation"
+          onClick={dismissAddModal}
+        >
           <form
             onSubmit={submitAdd}
+            onClick={(e) => e.stopPropagation()}
             className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-sm border border-[var(--border-subtle)] bg-[var(--panel)] p-5 text-[var(--ink)] shadow-2xl"
           >
-            <h3 className="font-display text-lg font-semibold text-[var(--ink)]">
-              登册新角色
-            </h3>
-            <p className="mt-1 text-xs text-[var(--ink-muted)]">
-              择像、裁方、选头像框色，再撰小传。众人皆可改，如同传阅的稿本。
-            </p>
-            <label className="mt-4 block">
-              <span className={labelClass}>称呼</span>
+            <div className="mb-4 flex items-start justify-between gap-3 border-b border-[var(--border-subtle)] pb-3">
+              <div className="min-w-0">
+                <h3 className="font-display text-lg font-semibold text-[var(--ink)]">
+                  添加角色
+                </h3>
+                <p className="mt-1 text-xs text-[var(--ink-muted)]">
+                  选好头像、裁一下、选个边框颜色，再写背景故事就行。谁都可以改，当成大家一起维护的板子就好。
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="关闭"
+                onClick={dismissAddModal}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm text-xl leading-none text-[var(--ink-muted)] transition-colors hover:bg-black/10 hover:text-[var(--ink)]"
+              >
+                ×
+              </button>
+            </div>
+            <label className="block">
+              <span className={labelClass}>名称</span>
               <input
                 required
                 className={inputClass}
@@ -542,7 +577,7 @@ export function OcNetworkPage() {
               />
             </label>
             <label className="mt-3 block">
-              <span className={labelClass}>人物小传</span>
+              <span className={labelClass}>背景故事</span>
               <textarea
                 className={cn(inputClass, "min-h-[100px]")}
                 value={addBackstory}
@@ -557,7 +592,7 @@ export function OcNetworkPage() {
               />
             </div>
             <div className="mt-3 block">
-              <span className={labelClass}>肖像（须裁剪）</span>
+              <span className={labelClass}>头像（需要裁剪）</span>
               <input
                 type="file"
                 accept="image/*"
@@ -572,7 +607,7 @@ export function OcNetworkPage() {
               />
               {addFile && (
                 <p className="mt-1 text-xs text-[#2d5a3d]">
-                  肖像已备：{addFile.name}（{Math.round(addFile.size / 1024)} KB）
+                  头像已就绪：{addFile.name}（{Math.round(addFile.size / 1024)} KB）
                 </p>
               )}
             </div>
@@ -583,20 +618,16 @@ export function OcNetworkPage() {
               <button
                 type="button"
                 className={btnGhost}
-                onClick={() => {
-                  setModal("none");
-                  closeAddCrop();
-                  setAddFile(null);
-                }}
+                onClick={dismissAddModal}
               >
-                作罢
+                取消
               </button>
               <button
                 type="submit"
                 disabled={addBusy}
                 className={cn(btnPrimary, addBusy && "opacity-60")}
               >
-                {addBusy ? "写入中…" : "写入名册"}
+                {addBusy ? "创建中…" : "创建"}
               </button>
             </div>
           </form>
@@ -604,20 +635,37 @@ export function OcNetworkPage() {
       )}
 
       {modal === "edit" && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          role="presentation"
+          onClick={dismissEditModal}
+        >
           <form
             onSubmit={submitEdit}
+            onClick={(e) => e.stopPropagation()}
             className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-sm border border-[var(--border-subtle)] bg-[var(--panel)] p-5 text-[var(--ink)] shadow-2xl"
           >
-            <h3 className="font-display text-lg font-semibold text-[var(--ink)]">
-              修订档案与批注
-            </h3>
-            <p className="mt-1 text-xs text-[var(--ink-muted)]">
-              可改任意角色，亦可自某人指向另一人写下看法与经历。
-            </p>
+            <div className="mb-4 flex items-start justify-between gap-3 border-b border-[var(--border-subtle)] pb-3">
+              <div className="min-w-0">
+                <h3 className="font-display text-lg font-semibold text-[var(--ink)]">
+                  编辑资料
+                </h3>
+                <p className="mt-1 text-xs text-[var(--ink-muted)]">
+                  可以改任意角色；下面也能从「这个人」连到「那个人」，写看法和一起经历过的事。
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="关闭"
+                onClick={dismissEditModal}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm text-xl leading-none text-[var(--ink-muted)] transition-colors hover:bg-black/10 hover:text-[var(--ink)]"
+              >
+                ×
+              </button>
+            </div>
 
-            <label className="mt-3 block">
-              <span className={labelClass}>要修订的角色</span>
+            <label className="block">
+              <span className={labelClass}>选哪个角色</span>
               <select
                 className={inputClass}
                 value={editPickId}
@@ -641,10 +689,10 @@ export function OcNetworkPage() {
 
             <hr className="my-4 border-[var(--border-subtle)]" />
             <div className="text-[10px] uppercase tracking-wider text-[var(--gold-dim)]">
-              档案
+              基本信息
             </div>
             <label className="mt-2 block">
-              <span className={labelClass}>称呼</span>
+              <span className={labelClass}>名称</span>
               <input
                 className={inputClass}
                 value={editName}
@@ -652,7 +700,7 @@ export function OcNetworkPage() {
               />
             </label>
             <label className="mt-3 block">
-              <span className={labelClass}>人物小传</span>
+              <span className={labelClass}>背景故事</span>
               <textarea
                 className={cn(inputClass, "min-h-[80px]")}
                 value={editBackstory}
@@ -667,7 +715,7 @@ export function OcNetworkPage() {
               />
             </div>
             <div className="mt-3 block">
-              <span className={labelClass}>更换肖像（可选）</span>
+              <span className={labelClass}>换头像（可选）</span>
               <input
                 type="file"
                 accept="image/*"
@@ -682,17 +730,17 @@ export function OcNetworkPage() {
               />
               {editFile && (
                 <p className="mt-1 text-xs text-[#2d5a3d]">
-                  新肖像已备：{editFile.name}
+                  新头像已就绪：{editFile.name}
                 </p>
               )}
             </div>
 
             <hr className="my-4 border-[var(--border-subtle)]" />
             <div className="text-[10px] uppercase tracking-wider text-[var(--gold-dim)]">
-              关系批注（自当前角色指向…）
+              关系（从当前角色连到…）
             </div>
             <label className="mt-2 block">
-              <span className={labelClass}>另一角色</span>
+              <span className={labelClass}>对方角色</span>
               <select
                 className={inputClass}
                 value={edgeTargetId}
@@ -709,7 +757,7 @@ export function OcNetworkPage() {
               </select>
             </label>
             <label className="mt-3 block">
-              <span className={labelClass}>看法 / 判词</span>
+              <span className={labelClass}>看法</span>
               <textarea
                 className={cn(inputClass, "min-h-[60px]")}
                 value={edgeView}
@@ -718,7 +766,7 @@ export function OcNetworkPage() {
               />
             </label>
             <label className="mt-3 block">
-              <span className={labelClass}>台上台下经历</span>
+              <span className={labelClass}>一起经历过什么</span>
               <textarea
                 className={cn(inputClass, "min-h-[60px]")}
                 value={edgeHistory}
@@ -734,13 +782,9 @@ export function OcNetworkPage() {
               <button
                 type="button"
                 className={btnGhost}
-                onClick={() => {
-                  setModal("none");
-                  closeEditCrop();
-                  setEditFile(null);
-                }}
+                onClick={dismissEditModal}
               >
-                合上
+                取消
               </button>
               <button
                 type="submit"
@@ -750,7 +794,7 @@ export function OcNetworkPage() {
                   (editBusy || !editPickId) && "opacity-60",
                 )}
               >
-                {editBusy ? "写入中…" : "存稿"}
+                {editBusy ? "保存中…" : "保存"}
               </button>
             </div>
           </form>

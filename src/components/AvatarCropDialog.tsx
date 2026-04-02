@@ -66,7 +66,7 @@ export function AvatarCropDialog({
             {title}
           </h3>
           <p className="mt-1 text-xs text-[var(--ink-muted)]">
-            拖动与缩放选区；头像将裁为方形，便于在推演表上呈现。
+            拖动、缩放选区即可；最终会裁成方形头像。
           </p>
         </div>
         <div className="relative h-72 w-full bg-[var(--void)]">

@@ -17,9 +17,9 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "铃华2026 · 校外研修｜关系推演稿",
+  title: "铃华2026 · 校外研修｜成员关系一览",
   description:
-    "某位演员为研读「铃华2026校外研修」背后的剧本，将登场者及其羁绊整理为可推演的关系表。",
+    "铃华2026 校外研修用的成员关系图：像在读剧本一样，把大家的人设和彼此的看法、经历连成一张网。",
 };
 
 export default function RootLayout({

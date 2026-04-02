@@ -21,7 +21,7 @@ export function RingColorPicker({ value, onChange, colorInputId }: Props) {
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[var(--ink-muted)]">头像外圈颜色</p>
+      <p className="text-xs text-[var(--ink-muted)]">头像边框颜色</p>
       <div className="flex flex-wrap gap-2">
         {RING_COLOR_SWATCHES.map((c) => (
           <button
@@ -58,7 +58,7 @@ export function RingColorPicker({ value, onChange, colorInputId }: Props) {
           className="text-xs text-[var(--gold)] underline decoration-[var(--gold-dim)] underline-offset-2 hover:text-[var(--gold-bright)]"
           onClick={() => onChange(DEFAULT_RING_COLOR)}
         >
-          恢复默认金
+          恢复默认
         </button>
       </div>
     </div>
