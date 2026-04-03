@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { RichText } from "@/components/RichText";
+import { RichTextFormatBar } from "@/components/RichTextFormatBar";
 import {
   getSitePassword,
   setSitePassword,
   sitePasswordHeaders,
 } from "@/lib/api-helpers";
+import { RICH_TEXT_HINT } from "@/lib/parse-rich-text";
 import {
   MOE_TAG_MAX_LABEL,
   MOE_TAG_MAX_REASON,
@@ -36,6 +39,8 @@ export default function MoeTagsPage() {
   const [submitErr, setSubmitErr] = useState<string | null>(null);
   const [submitBusy, setSubmitBusy] = useState(false);
   const [sitePwInput, setSitePwInput] = useState("");
+  const labelRef = useRef<HTMLInputElement>(null);
+  const reasonRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setSitePwInput(getSitePassword());
@@ -169,6 +174,9 @@ export default function MoeTagsPage() {
               <h2 className="font-display text-base font-semibold text-[var(--parchment)]">
                 添加标签
               </h2>
+              <p className="mt-2 text-[10px] text-[var(--parchment)]/55">
+                {RICH_TEXT_HINT}
+              </p>
               <form onSubmit={submit} className="mt-4 space-y-3">
                 <label className="block">
                   <span className={labelClass}>角色</span>
@@ -188,7 +196,17 @@ export default function MoeTagsPage() {
                   <span className={labelClass}>
                     萌属性 tag（最多 {MOE_TAG_MAX_LABEL} 字）
                   </span>
+                  <div className="mt-1">
+                    <RichTextFormatBar
+                      value={label}
+                      onChange={setLabel}
+                      inputRef={labelRef}
+                      theme="dark"
+                      showHint={false}
+                    />
+                  </div>
                   <input
+                    ref={labelRef}
                     className={inputClass}
                     value={label}
                     maxLength={MOE_TAG_MAX_LABEL}
@@ -200,7 +218,17 @@ export default function MoeTagsPage() {
                   <span className={labelClass}>
                     理由（最多 {MOE_TAG_MAX_REASON} 字，建议填写）
                   </span>
+                  <div className="mt-1">
+                    <RichTextFormatBar
+                      value={reason}
+                      onChange={setReason}
+                      inputRef={reasonRef}
+                      theme="dark"
+                      showHint={false}
+                    />
+                  </div>
                   <textarea
+                    ref={reasonRef}
                     className={cn(inputClass, "min-h-[100px] resize-y")}
                     value={reason}
                     maxLength={MOE_TAG_MAX_REASON}
@@ -240,13 +268,22 @@ export default function MoeTagsPage() {
                         className="rounded-sm border border-[var(--border-subtle)]/60 bg-black/25 px-3 py-2 text-sm"
                       >
                         <span className="font-medium text-[var(--gold)]">
-                          {t.label}
+                          <RichText
+                            as="span"
+                            variant="dark"
+                            text={t.label}
+                            className="font-medium text-[var(--gold)]"
+                          />
                         </span>
                         {t.reason ? (
-                          <p className="mt-1 text-xs leading-relaxed text-[var(--parchment)]/80">
+                          <div className="mt-1 text-xs leading-relaxed text-[var(--parchment)]/80">
                             <span className="text-[var(--gold-dim)]">理由：</span>
-                            {t.reason}
-                          </p>
+                            <RichText
+                              as="span"
+                              variant="dark"
+                              text={t.reason}
+                            />
+                          </div>
                         ) : (
                           <p className="mt-1 text-xs italic text-[var(--ink-muted)]">
                             （未写理由）

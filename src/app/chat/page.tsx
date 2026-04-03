@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { RichText } from "@/components/RichText";
+import { RichTextFormatBar } from "@/components/RichTextFormatBar";
 import { sitePasswordHeaders } from "@/lib/api-helpers";
 import { CHAT_MAX_BODY_LEN } from "@/lib/chat-names";
 
@@ -72,6 +74,7 @@ export default function ChatPage() {
   const [deleteErr, setDeleteErr] = useState<string | null>(null);
   const lastIdRef = useRef<string | null>(null);
   const pollSlowRef = useRef(false);
+  const draftRef = useRef<HTMLTextAreaElement>(null);
 
   const releaseHold = useCallback(async () => {
     const hk =
@@ -382,9 +385,11 @@ export default function ChatPage() {
                       {deletingId === m.id ? "…" : "删除"}
                     </button>
                   </div>
-                  <p className="mt-1 whitespace-pre-wrap text-[var(--parchment)]">
-                    {m.body}
-                  </p>
+                  <RichText
+                    text={m.body}
+                    variant="dark"
+                    className="mt-1 text-[var(--parchment)]"
+                  />
                 </div>
               ))}
             </div>
@@ -394,7 +399,16 @@ export default function ChatPage() {
               )}
               <label className="block text-xs text-[var(--gold-dim)]">
                 消息（最多 {CHAT_MAX_BODY_LEN} 字）
+                <div className="mt-1">
+                  <RichTextFormatBar
+                    value={draft}
+                    onChange={setDraft}
+                    inputRef={draftRef}
+                    theme="dark"
+                  />
+                </div>
                 <textarea
+                  ref={draftRef}
                   className={cn(inputClass, "mt-1 min-h-[80px] resize-y")}
                   value={draft}
                   maxLength={CHAT_MAX_BODY_LEN}

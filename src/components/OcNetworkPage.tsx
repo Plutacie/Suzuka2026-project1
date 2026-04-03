@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { ForceGraphCanvas } from "@/components/ForceGraphCanvas";
+import { RichText } from "@/components/RichText";
+import { RichTextFormatBar } from "@/components/RichTextFormatBar";
 import { RingColorPicker } from "@/components/RingColorPicker";
 import { getSitePassword, setSitePassword, sitePasswordHeaders } from "@/lib/api-helpers";
+import { RICH_TEXT_HINT } from "@/lib/parse-rich-text";
 import {
   DEFAULT_RING_COLOR,
   normalizeRingColor,
@@ -65,6 +68,11 @@ export function OcNetworkPage() {
   const [edgeTargetId, setEdgeTargetId] = useState("");
   const [edgeView, setEdgeView] = useState("");
   const [edgeHistory, setEdgeHistory] = useState("");
+
+  const addBackstoryRef = useRef<HTMLTextAreaElement>(null);
+  const editBackstoryRef = useRef<HTMLTextAreaElement>(null);
+  const edgeViewRef = useRef<HTMLTextAreaElement>(null);
+  const edgeHistoryRef = useRef<HTMLTextAreaElement>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -392,15 +400,27 @@ export function OcNetworkPage() {
               </p>
               <div>
                 <div className={labelClass}>看法</div>
-                <p className="mt-1 whitespace-pre-wrap text-[var(--ink)]">
-                  {selectedLink.viewpoint || "（还没写）"}
-                </p>
+                {selectedLink.viewpoint ? (
+                  <RichText
+                    text={selectedLink.viewpoint}
+                    variant="light"
+                    className="mt-1 text-[var(--ink)]"
+                  />
+                ) : (
+                  <p className="mt-1 text-[var(--ink)]">（还没写）</p>
+                )}
               </div>
               <div>
                 <div className={labelClass}>一起经历过什么</div>
-                <p className="mt-1 whitespace-pre-wrap text-[var(--ink)]">
-                  {selectedLink.interactionHistory || "（还没写）"}
-                </p>
+                {selectedLink.interactionHistory ? (
+                  <RichText
+                    text={selectedLink.interactionHistory}
+                    variant="light"
+                    className="mt-1 text-[var(--ink)]"
+                  />
+                ) : (
+                  <p className="mt-1 text-[var(--ink)]">（还没写）</p>
+                )}
               </div>
               <p className="text-xs text-[var(--ink-muted)]">
                 想改这条线的话，点上面「编辑资料」，选左边的角色当起点即可。
@@ -447,9 +467,17 @@ export function OcNetworkPage() {
               </div>
               <div>
                 <div className={labelClass}>背景故事</div>
-                <p className="mt-1 whitespace-pre-wrap leading-relaxed text-[var(--ink)]">
-                  {selectedNode.backstory || "（还没写）"}
-                </p>
+                {selectedNode.backstory ? (
+                  <RichText
+                    text={selectedNode.backstory}
+                    variant="light"
+                    className="mt-1 leading-relaxed text-[var(--ink)]"
+                  />
+                ) : (
+                  <p className="mt-1 leading-relaxed text-[var(--ink)]">
+                    （还没写）
+                  </p>
+                )}
               </div>
               <div>
                 <div className={labelClass}>萌属性 tag</div>
@@ -465,13 +493,22 @@ export function OcNetworkPage() {
                         className="rounded-sm border border-[var(--border-subtle)] bg-[#faf8f4]/90 p-2"
                       >
                         <span className="text-sm font-medium text-[#5c4a28]">
-                          {t.label}
+                          <RichText
+                            as="span"
+                            variant="light"
+                            text={t.label}
+                            className="font-medium"
+                          />
                         </span>
                         {t.reason ? (
-                          <p className="mt-1 text-xs leading-relaxed text-[var(--ink-muted)]">
+                          <div className="mt-1 text-xs leading-relaxed text-[var(--ink-muted)]">
                             <span className="text-[var(--gold-dim)]">理由：</span>
-                            {t.reason}
-                          </p>
+                            <RichText
+                              as="span"
+                              variant="light"
+                              text={t.reason}
+                            />
+                          </div>
                         ) : (
                           <p className="mt-1 text-xs italic text-[var(--ink-muted)]">
                             （未写理由）
@@ -504,9 +541,17 @@ export function OcNetworkPage() {
                       >
                         → {nodeById.get(l.target)?.name ?? l.target}
                       </button>
-                      <p className="mt-1 line-clamp-3 text-xs text-[var(--ink-muted)]">
-                        {l.viewpoint || "（未写看法）"}
-                      </p>
+                      <div className="mt-1 line-clamp-3 text-xs text-[var(--ink-muted)]">
+                        {l.viewpoint ? (
+                          <RichText
+                            as="span"
+                            variant="light"
+                            text={l.viewpoint}
+                          />
+                        ) : (
+                          "（未写看法）"
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -533,9 +578,17 @@ export function OcNetworkPage() {
                       >
                         ← {nodeById.get(l.source)?.name ?? l.source}
                       </button>
-                      <p className="mt-1 line-clamp-3 text-xs text-[var(--ink-muted)]">
-                        {l.viewpoint || "（未写看法）"}
-                      </p>
+                      <div className="mt-1 line-clamp-3 text-xs text-[var(--ink-muted)]">
+                        {l.viewpoint ? (
+                          <RichText
+                            as="span"
+                            variant="light"
+                            text={l.viewpoint}
+                          />
+                        ) : (
+                          "（未写看法）"
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -549,6 +602,13 @@ export function OcNetworkPage() {
               <p>在左边图里点头像，能看 Ta 的背景故事、大家写的萌属性 tag，以及跟别人的关系。</p>
               <p>点那条金色的线，能看到这两个人之间写了什么看法、一起经历过啥。</p>
               <p>顶栏「萌属性标签」可以给任意角色添加自定义 tag，并写上理由。</p>
+              <p className="text-[11px] leading-relaxed">
+                长文案可用{" "}
+                <code className="rounded bg-black/10 px-1">**加粗**</code>、
+                <code className="rounded bg-black/10 px-1">~~删除线~~</code>、
+                <code className="rounded bg-black/10 px-1">||遮掩||</code>
+                （遮掩块点击展开/收起）。
+              </p>
             </div>
           )}
         </aside>
@@ -597,6 +657,9 @@ export function OcNetworkPage() {
                 <p className="mt-1 text-xs text-[var(--ink-muted)]">
                   选好头像、裁一下、选个边框颜色，再写背景故事就行。谁都可以改，当成大家一起维护的板子就好。
                 </p>
+                <p className="mt-2 text-[10px] text-[var(--ink-muted)]">
+                  {RICH_TEXT_HINT}
+                </p>
               </div>
               <button
                 type="button"
@@ -618,8 +681,18 @@ export function OcNetworkPage() {
             </label>
             <label className="mt-3 block">
               <span className={labelClass}>背景故事</span>
+              <div className="mt-1">
+                <RichTextFormatBar
+                  value={addBackstory}
+                  onChange={setAddBackstory}
+                  inputRef={addBackstoryRef}
+                  theme="panel"
+                  showHint={false}
+                />
+              </div>
               <textarea
-                className={cn(inputClass, "min-h-[100px]")}
+                ref={addBackstoryRef}
+                className={cn(inputClass, "mt-1 min-h-[100px]")}
                 value={addBackstory}
                 onChange={(e) => setAddBackstory(e.target.value)}
               />
@@ -693,6 +766,9 @@ export function OcNetworkPage() {
                 <p className="mt-1 text-xs text-[var(--ink-muted)]">
                   可以改任意角色；下面也能从「这个人」连到「那个人」，写看法和一起经历过的事。
                 </p>
+                <p className="mt-2 text-[10px] text-[var(--ink-muted)]">
+                  {RICH_TEXT_HINT}
+                </p>
               </div>
               <button
                 type="button"
@@ -741,8 +817,18 @@ export function OcNetworkPage() {
             </label>
             <label className="mt-3 block">
               <span className={labelClass}>背景故事</span>
+              <div className="mt-1">
+                <RichTextFormatBar
+                  value={editBackstory}
+                  onChange={setEditBackstory}
+                  inputRef={editBackstoryRef}
+                  theme="panel"
+                  showHint={false}
+                />
+              </div>
               <textarea
-                className={cn(inputClass, "min-h-[80px]")}
+                ref={editBackstoryRef}
+                className={cn(inputClass, "mt-1 min-h-[80px]")}
                 value={editBackstory}
                 onChange={(e) => setEditBackstory(e.target.value)}
               />
@@ -798,8 +884,19 @@ export function OcNetworkPage() {
             </label>
             <label className="mt-3 block">
               <span className={labelClass}>看法</span>
+              <div className="mt-1">
+                <RichTextFormatBar
+                  value={edgeView}
+                  onChange={setEdgeView}
+                  inputRef={edgeViewRef}
+                  theme="panel"
+                  disabled={!edgeTargetId}
+                  showHint={false}
+                />
+              </div>
               <textarea
-                className={cn(inputClass, "min-h-[60px]")}
+                ref={edgeViewRef}
+                className={cn(inputClass, "mt-1 min-h-[60px]")}
                 value={edgeView}
                 onChange={(e) => setEdgeView(e.target.value)}
                 disabled={!edgeTargetId}
@@ -807,8 +904,19 @@ export function OcNetworkPage() {
             </label>
             <label className="mt-3 block">
               <span className={labelClass}>一起经历过什么</span>
+              <div className="mt-1">
+                <RichTextFormatBar
+                  value={edgeHistory}
+                  onChange={setEdgeHistory}
+                  inputRef={edgeHistoryRef}
+                  theme="panel"
+                  disabled={!edgeTargetId}
+                  showHint={false}
+                />
+              </div>
               <textarea
-                className={cn(inputClass, "min-h-[60px]")}
+                ref={edgeHistoryRef}
+                className={cn(inputClass, "mt-1 min-h-[60px]")}
                 value={edgeHistory}
                 onChange={(e) => setEdgeHistory(e.target.value)}
                 disabled={!edgeTargetId}
