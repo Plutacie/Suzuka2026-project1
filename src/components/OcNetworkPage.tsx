@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { ForceGraphCanvas } from "@/components/ForceGraphCanvas";
@@ -76,6 +77,7 @@ export function OcNetworkPage() {
         data.nodes.map((n) => ({
           ...n,
           ringColor: normalizeRingColor(n.ringColor),
+          moeTags: n.moeTags ?? [],
         })),
       );
       setLinks(data.links);
@@ -332,6 +334,12 @@ export function OcNetworkPage() {
           >
             刷新
           </button>
+          <Link href="/chat" className={btnGhost}>
+            匿名对谈
+          </Link>
+          <Link href="/moe-tags" className={btnGhost}>
+            萌属性标签
+          </Link>
         </div>
       </header>
 
@@ -444,6 +452,37 @@ export function OcNetworkPage() {
                 </p>
               </div>
               <div>
+                <div className={labelClass}>萌属性 tag</div>
+                {(selectedNode.moeTags ?? []).length === 0 ? (
+                  <p className="mt-1 text-sm text-[var(--ink-muted)]">
+                    还没有标签，可在顶栏「萌属性标签」页补充（可写理由）。
+                  </p>
+                ) : (
+                  <ul className="mt-2 space-y-2">
+                    {(selectedNode.moeTags ?? []).map((t) => (
+                      <li
+                        key={t.id}
+                        className="rounded-sm border border-[var(--border-subtle)] bg-[#faf8f4]/90 p-2"
+                      >
+                        <span className="text-sm font-medium text-[#5c4a28]">
+                          {t.label}
+                        </span>
+                        {t.reason ? (
+                          <p className="mt-1 text-xs leading-relaxed text-[var(--ink-muted)]">
+                            <span className="text-[var(--gold-dim)]">理由：</span>
+                            {t.reason}
+                          </p>
+                        ) : (
+                          <p className="mt-1 text-xs italic text-[var(--ink-muted)]">
+                            （未写理由）
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div>
                 <div className="text-xs font-medium text-[#6b5a3a]">
                   Ta 怎么看待别人
                 </div>
@@ -507,8 +546,9 @@ export function OcNetworkPage() {
               <p className="font-display text-base font-semibold text-[var(--ink)]">
                 怎么用
               </p>
-              <p>在左边图里点头像，能看 Ta 的背景故事和跟别人的关系。</p>
+              <p>在左边图里点头像，能看 Ta 的背景故事、大家写的萌属性 tag，以及跟别人的关系。</p>
               <p>点那条金色的线，能看到这两个人之间写了什么看法、一起经历过啥。</p>
+              <p>顶栏「萌属性标签」可以给任意角色添加自定义 tag，并写上理由。</p>
             </div>
           )}
         </aside>
